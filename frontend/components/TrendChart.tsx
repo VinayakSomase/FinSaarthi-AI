@@ -10,26 +10,26 @@ import {
   CartesianGrid,
 } from 'recharts'
 
-const data = [
-  { month: 'Jan', score: 780 },
-  { month: 'Feb', score: 792 },
-  { month: 'Mar', score: 801 },
-  { month: 'Apr', score: 812 },
-  { month: 'May', score: 821 },
-  { month: 'Jun', score: 828 },
-  { month: 'Jul', score: 832 },
-  { month: 'Aug', score: 836 },
-  { month: 'Sep', score: 839 },
-  { month: 'Oct', score: 840 },
-  { month: 'Nov', score: 841 },
-  { month: 'Dec', score: 842 },
-]
+interface TrendPoint {
+  date: string
+  health_score: number
+}
 
-export default function TrendChart() {
+interface Props {
+  data: TrendPoint[]
+}
+
+export default function TrendChart({ data }: Props) {
+
+  const chartData = data.map((item) => ({
+    month: item.date,
+    score: item.health_score,
+  }))
+
   return (
     <div className="w-full h-96">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data}>
+        <LineChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" />
 
           <XAxis dataKey="month" />

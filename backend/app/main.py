@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 
+
+from fastapi.middleware.cors import CORSMiddleware
 from app.api import auth
 from app.api import msme
 from app.api import dashboard
@@ -13,6 +15,7 @@ from app.api import report
 from app.api import export
 from app.api import upload
 from app.api import analyze
+from app.api import decision
 
 from app.core.database import engine, Base
 from app.core.exception_handler import register_exception_handlers
@@ -30,6 +33,18 @@ app = FastAPI(
     description="AI-Powered MSME Financial Health Card & Loan Eligibility Platform",
     version="1.0.0"
 )
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 # Register Global Exception Handler
 register_exception_handlers(app)
@@ -112,6 +127,11 @@ app.include_router(
 
 app.include_router(
     analyze.router,
+    prefix="/api"
+)
+
+app.include_router(
+    decision.router,
     prefix="/api"
 )
 

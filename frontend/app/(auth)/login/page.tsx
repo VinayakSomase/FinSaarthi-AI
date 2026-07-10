@@ -2,11 +2,13 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import LoginIllustration from '@/components/login-illustration'
 import { Eye, EyeOff } from 'lucide-react'
 import Image from 'next/image'
+import { login as loginUser } from "@/services/auth";
 export default function LoginPage() {
   const router = useRouter()
   const [email, setEmail] = useState('')
@@ -17,46 +19,45 @@ export default function LoginPage() {
   const [error, setError] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    setIsLoading(true)
+    e.preventDefault();
+
+    setError("");
+    setIsLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 800))
-      
-      // Validate inputs
       if (!email || !password) {
-        setError('Please fill in all fields')
-        setIsLoading(false)
-        return
+        setError("Please fill in all fields");
+        setIsLoading(false);
+        return;
       }
 
-      if (!email.includes('@')) {
-        setError('Please enter a valid email address')
-        setIsLoading(false)
-        return
+      const data = await loginUser(email, password);
+      console.log("LOGIN RESPONSE =", data);
+      console.log("ACCESS TOKEN =", data.access_token);
+
+      // console.log(data);
+
+      // Save JWT token
+      localStorage.setItem("token", data.access_token);
+
+      // Save user (optional)
+      if (data.user) {
+        localStorage.setItem("user", JSON.stringify(data.user));
       }
 
-      if (password.length < 6) {
-        setError('Password must be at least 6 characters')
-        setIsLoading(false)
-        return
-      }
+      router.push("/dashboard");
+    } catch (err: any) {
+      console.error(err);
 
-      // Simulate successful login
-      // In production, this would authenticate with your backend
-      console.log('Login attempt:', { email, rememberMe })
-      
-      // Navigate to dashboard
-      // TODO: Replace with FastAPI authentication later
-setIsLoading(false)
-router.push('/dashboard')
-    } catch (err) {
-      setError('An error occurred. Please try again.')
-      setIsLoading(false)
+      setError(
+        err?.response?.data?.detail ||
+        err?.response?.data?.message ||
+        "Invalid email or password"
+      );
+    } finally {
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">

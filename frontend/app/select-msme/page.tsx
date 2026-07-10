@@ -1,16 +1,47 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+
 import AppLayout from '@/components/AppLayout'
 import MSMECard from '@/components/MSMECard'
 
+import { getMSMEs } from '@/services/msme'
+
 export default function SelectMSMEPage() {
-  const [selectedMSME, setSelectedMSME] = useState('')
+
+  const [msmes, setMsmes] = useState<any[]>([])
+  const [selectedMSME, setSelectedMSME] = useState("")
+
+  useEffect(() => {
+
+    async function loadMSMEs() {
+
+      try {
+
+        const data = await getMSMEs()
+
+        console.log("MSMEs:", data)
+
+        setMsmes(data)
+
+      } catch (error) {
+
+        console.error(error)
+
+      }
+
+    }
+
+    loadMSMEs()
+
+  }, [])
 
   return (
+
     <AppLayout active="Select MSME">
 
       <div className="flex items-center justify-between">
+
         <h1 className="text-4xl font-bold text-[#003366]">
           Select MSME
         </h1>
@@ -18,6 +49,7 @@ export default function SelectMSMEPage() {
         <button className="bg-[#003366] hover:bg-[#005BAC] text-white px-5 py-3 rounded-xl font-semibold transition">
           Upload CSV
         </button>
+
       </div>
 
       <p className="text-gray-500 mt-2 mb-6">
@@ -25,58 +57,60 @@ export default function SelectMSMEPage() {
       </p>
 
       <div className="mb-8">
+
         <select
           value={selectedMSME}
           onChange={(e) => setSelectedMSME(e.target.value)}
-          className="w-full md:w-96 rounded-xl border border-gray-300 bg-white px-4 py-3 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+          className="w-full md:w-96 rounded-xl border border-gray-300 bg-white px-4 py-3 shadow-sm"
         >
-          <option value="">Select an MSME...</option>
-          <option value="ABC Textiles Pvt. Ltd.">
-            ABC Textiles Pvt. Ltd.
+
+          <option value="">
+            Select an MSME...
           </option>
-          <option value="XYZ Foods Pvt. Ltd.">
-            XYZ Foods Pvt. Ltd.
-          </option>
-          <option value="Sunrise Engineering">
-            Sunrise Engineering
-          </option>
+
+          {msmes.map((msme) => (
+
+            <option
+              key={msme.id}
+              value={msme.id}
+            >
+              {msme.business_name}
+            </option>
+
+          ))}
+
         </select>
 
-        {selectedMSME === '' && (
-          <p className="mt-3 text-sm text-red-600">
-            Please select an MSME before starting the analysis.
-          </p>
-        )}
       </div>
 
       <div className="space-y-6">
 
-        <MSMECard
-          name="ABC Textiles Pvt. Ltd."
-          industry="Textile Manufacturing"
-          score={842}
-          risk="Low"
-          loan="₹48 Lakh"
-        />
+        {msmes.map((msme) => (
 
-        <MSMECard
-          name="XYZ Foods Pvt. Ltd."
-          industry="Food Processing"
-          score={791}
-          risk="Medium"
-          loan="₹32 Lakh"
-        />
+          <MSMECard
 
-        <MSMECard
-          name="Sunrise Engineering"
-          industry="Engineering"
-          score={865}
-          risk="Low"
-          loan="₹55 Lakh"
-        />
+            key={msme.id}
+            
+            id={msme.id}
+
+            name={msme.business_name}
+
+            industry={msme.industry}
+
+            score={msme.health_score}
+
+            risk={msme.risk_level}
+
+            loan="₹48 Lakh"
+
+          />
+
+        ))}
 
       </div>
 
     </AppLayout>
+
   )
+
 }

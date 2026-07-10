@@ -1,10 +1,93 @@
 'use client'
 
+import { useEffect, useState } from 'react'
+
 import AppLayout from '@/components/AppLayout'
 import DecisionCard from '@/components/DecisionCard'
 import { Button } from '@/components/ui/button'
 
+import { getDecision } from '@/services/decision'
+
 export default function DecisionReportPage() {
+
+  const [decision, setDecision] = useState<any>(null)
+
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+
+    async function loadDecision() {
+
+      try {
+
+        const id = localStorage.getItem("selectedMSME")
+
+        if (!id) {
+
+          window.location.href = "/select-msme"
+
+          return
+
+        }
+
+        const data = await getDecision(Number(id))
+
+        console.log("Decision:", data)
+
+        setDecision(data)
+
+      } catch (error) {
+
+        console.error(error)
+
+      } finally {
+
+        setLoading(false)
+
+      }
+
+    }
+
+    loadDecision()
+
+  }, [])
+
+  if (loading) {
+
+  return (
+
+    <AppLayout active="Decision & Report">
+
+      <div className="text-center mt-20 text-xl">
+
+        Loading Decision Report...
+
+      </div>
+
+    </AppLayout>
+
+  )
+
+}
+
+if (!decision) {
+
+  return (
+
+    <AppLayout active="Decision & Report">
+
+      <div className="text-center mt-20 text-red-500">
+
+        Failed to load decision.
+
+      </div>
+
+    </AppLayout>
+
+  )
+
+}
+
   return (
     <AppLayout active="Decision & Report">
 
@@ -27,13 +110,13 @@ export default function DecisionReportPage() {
       </p>
 
       <h2 className="text-4xl font-bold text-white mt-2">
-        ✅ APPROVED
+        {decision.loan_eligibility === "Eligible"
+          ? "✅ APPROVED"
+          : "⚠ REVIEW REQUIRED"}
       </h2>
 
       <p className="text-green-100 mt-3 max-w-2xl">
-        FinSaarthi AI recommends approving this MSME for business lending based
-        on its excellent financial health, low lending risk, and strong repayment
-        behaviour.
+        {decision.recommendation}
       </p>
     </div>
 
@@ -43,7 +126,7 @@ export default function DecisionReportPage() {
       </p>
 
       <h2 className="text-5xl font-bold text-white mt-2">
-        96%
+        {decision.confidence}%
       </h2>
     </div>
 
@@ -54,8 +137,12 @@ export default function DecisionReportPage() {
 
         <DecisionCard
           title="Loan Decision"
-          value="Approve"
-          color="text-green-600"
+          value={decision.loan_eligibility}
+          color={
+            decision.loan_eligibility === "Eligible"
+              ? "text-green-600"
+              : "text-yellow-600"
+          }
         />
         
 
@@ -74,19 +161,25 @@ export default function DecisionReportPage() {
 
         <DecisionCard
           title="Eligible Amount"
-          value="₹48 Lakh"
+          value={`₹${decision.recommended_loan_amount.toLocaleString("en-IN")}`}
           color="text-[#003366]"
         />
 
         <DecisionCard
           title="Risk Level"
-          value="Low"
-          color="text-green-600"
+          value={decision.risk_level}
+          color={
+            decision.risk_level === "Low"
+              ? "text-green-600"
+              : decision.risk_level === "Medium"
+              ? "text-yellow-600"
+              : "text-red-600"
+          }
         />
 
         <DecisionCard
           title="Confidence"
-          value="96%"
+          value={`${decision.confidence}%`}
           color="text-[#003366]"
         />
 
@@ -100,17 +193,12 @@ export default function DecisionReportPage() {
         </h2>
 
         <p className="text-gray-700 leading-8">
-          FinSaarthi AI recommends approving this MSME for business lending.
-          The enterprise demonstrates excellent financial stability, strong GST
-          compliance, healthy repayment history and sustainable business growth.
-          The estimated lending risk is low, with a confidence score of 96%.
-          Based on the financial health assessment, the MSME qualifies for an
-          estimated loan amount of ₹48 Lakhs.
+          {decision.recommendation}
         </p>
 
       </div>
-     {/* Risk Assessment + Key Decision Factors */}
-<div className="grid lg:grid-cols-2 gap-6 mt-8">
+        {/* Risk Assessment + Key Decision Factors */}
+      <div className="grid lg:grid-cols-2 gap-6 mt-8">
 
   {/* Risk Assessment */}
   <div className="bg-white rounded-xl border shadow-sm p-6">
@@ -164,15 +252,35 @@ export default function DecisionReportPage() {
 
     <ul className="space-y-4 text-gray-700">
 
-      <li>✅ Financial Health Score: <span className="font-semibold">842 (Excellent)</span></li>
+      <li>
+        ✅ Financial Health Score:
+        <span className="font-semibold">
+          {" "}{decision.health_score}
+        </span>
+      </li>
 
       <li>✅ Top 12% compared to similar MSMEs</li>
 
-      <li>✅ Strong GST & statutory compliance</li>
+      <li>
+        ✅ GST Compliance Score:
+        <span className="font-semibold">
+          {" "}{decision.compliance}
+        </span>
+      </li>
 
-      <li>✅ Consistent repayment history</li>
+      <li>
+        ✅ Repayment Score:
+        <span className="font-semibold">
+          {" "}{decision.repayment}
+        </span>
+      </li>
 
-      <li>✅ Positive business growth trend</li>
+      <li>
+        ✅ Growth Score:
+        <span className="font-semibold">
+          {" "}{decision.growth}
+        </span>
+      </li>
 
     </ul>
 
@@ -195,15 +303,31 @@ export default function DecisionReportPage() {
 
     <div className="flex flex-wrap gap-4 mt-6">
 
-      <Button className="bg-green-500 hover:bg-green-600 text-white px-8 py-6 rounded-xl text-lg font-semibold">
+      <Button
+        onClick={() => {
+          const id = localStorage.getItem("selectedMSME") || "1";
+
+          window.open(
+            `http://127.0.0.1:8000/api/report/${id}`,
+            "_blank"
+          );
+        }}
+        className="bg-green-500 hover:bg-green-600 text-white px-8 py-6 rounded-xl text-lg font-semibold"
+      >
         📄 Download Report
       </Button>
 
-      <Button className="bg-white text-[#003366] hover:bg-gray-100 px-8 py-6 rounded-xl font-semibold">
-        📑 Export PDF
-      </Button>
+      
 
-      <Button className="bg-white text-[#003366] hover:bg-gray-100 px-8 py-6 rounded-xl font-semibold">
+      <Button
+        onClick={() => {
+          window.open(
+            "http://127.0.0.1:8000/api/export/msmes",
+            "_blank"
+          );
+        }}
+        className="bg-white text-[#003366] hover:bg-gray-100 px-8 py-6 rounded-xl font-semibold"
+      >
         📊 Export CSV
       </Button>
 

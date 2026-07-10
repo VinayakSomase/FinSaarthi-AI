@@ -1,9 +1,50 @@
 'use client'
 
+import { useEffect, useState } from 'react'
+
 import AppLayout from '@/components/AppLayout'
 import TrendChart from '@/components/TrendChart'
 
+import { getTrend } from '@/services/trend'
+
 export default function TrendAnalysisPage() {
+
+  const [trendData, setTrendData] = useState<any>(null)
+
+  useEffect(() => {
+
+    async function loadTrend() {
+
+      try {
+
+        const data = await getTrend()
+
+        console.log("Trend Data:", data)
+
+        setTrendData(data)
+
+      } catch (error) {
+
+        console.error(error)
+
+      }
+
+    }
+
+    loadTrend()
+
+  }, [])
+
+  if (!trendData) {
+    return (
+      <AppLayout active="Trend Analysis">
+        <div className="text-center mt-20 text-xl">
+          Loading Trend Analysis...
+        </div>
+      </AppLayout>
+    )
+  }
+
   return (
     <AppLayout active="Trend Analysis">
 
@@ -18,8 +59,12 @@ export default function TrendAnalysisPage() {
 
   <div className="bg-white rounded-xl border shadow-sm p-5">
     <p className="text-gray-500 text-sm">Current Score</p>
-    <h2 className="text-3xl font-bold text-[#003366] mt-2">842</h2>
-    <p className="text-green-600 font-medium mt-2">▲ +8% vs Last Year</p>
+    <h2 className="text-3xl font-bold text-[#003366] mt-2">
+      {trendData.latest_health_score}
+    </h2>
+    <p className="text-green-600 font-medium mt-2">
+      {trendData.trend} ({trendData.difference > 0 ? "+" : ""}{trendData.difference})
+    </p>
   </div>
 
   <div className="bg-white rounded-xl border shadow-sm p-5">
@@ -43,7 +88,7 @@ export default function TrendAnalysisPage() {
           Financial Health Trend
         </h2>
 
-        <TrendChart />
+        <TrendChart data={trendData.history} />
 
       </div>
       {/* Cash Flow Trend */}
@@ -124,14 +169,19 @@ export default function TrendAnalysisPage() {
   <div className="bg-green-50 border border-green-200 rounded-xl p-5">
 
     <p className="text-lg font-semibold text-green-700">
-      🟢 Overall Trend: Improving
+      🟢 Overall Trend: {trendData.trend}
     </p>
 
     <p className="text-gray-700 mt-3 leading-7">
-      Financial performance has improved steadily over the last 12 months.
-      Cash flow, repayment behaviour and compliance remain consistently
-      strong, indicating healthy business growth and improved
-      creditworthiness.
+      Latest Health Score: <strong>{trendData.latest_health_score}</strong><br />
+
+      Previous Score: <strong>{trendData.previous_health_score}</strong><br />
+
+      Overall Trend:
+      <strong> {trendData.trend}</strong><br />
+
+      Score Difference:
+      <strong> {trendData.difference}</strong>
     </p>
 
   </div>

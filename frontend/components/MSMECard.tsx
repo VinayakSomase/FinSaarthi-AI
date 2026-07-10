@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 type Props = {
+  id: number
   name: string
   industry: string
   score: number
@@ -10,6 +11,7 @@ type Props = {
 }
 
 export default function MSMECard({
+  id,
   name,
   industry,
   score,
@@ -74,11 +76,14 @@ export default function MSMECard({
 
         <button
   onClick={() => {
-    setLoading(true)
+    setLoading(true);
+
+    // Save selected MSME ID
+    localStorage.setItem("selectedMSME", id.toString());
 
     setTimeout(() => {
-      window.location.href = "/dashboard"
-    }, 1000)
+      window.location.href = "/financial-health";
+    }, 1000);
   }}
   disabled={loading}
   className="bg-[#003366] hover:bg-[#005BAC] disabled:bg-gray-400 text-white px-6 py-3 rounded-xl font-semibold transition"

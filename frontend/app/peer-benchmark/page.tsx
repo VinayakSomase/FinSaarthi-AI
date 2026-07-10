@@ -1,9 +1,92 @@
 'use client'
 
+import { useEffect, useState } from 'react'
+
 import AppLayout from '@/components/AppLayout'
 import BenchmarkChart from '@/components/BenchmarkChart'
 
+import { getBenchmark } from '@/services/benchmark'
+
 export default function PeerBenchmarkPage() {
+
+  const [benchmark, setBenchmark] = useState<any>(null)
+
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+
+    async function loadBenchmark() {
+
+      try {
+
+        const id = localStorage.getItem("selectedMSME")
+
+        if (!id) {
+
+          window.location.href = "/select-msme"
+
+          return
+
+        }
+
+        const data = await getBenchmark(Number(id))
+
+        console.log("Benchmark:", data)
+
+        setBenchmark(data)
+
+      } catch (error) {
+
+        console.error(error)
+
+      } finally {
+
+        setLoading(false)
+
+      }
+
+    }
+
+    loadBenchmark()
+
+  }, [])
+
+  if (loading) {
+
+    return (
+
+      <AppLayout active="Peer Benchmark">
+
+        <div className="text-center mt-20 text-xl">
+
+          Loading Benchmark...
+
+        </div>
+
+      </AppLayout>
+
+    )
+
+  }
+
+  if (!benchmark) {
+
+    return (
+
+      <AppLayout active="Peer Benchmark">
+
+        <div className="text-center mt-20 text-red-500">
+
+          Failed to load benchmark.
+
+        </div>
+
+      </AppLayout>
+
+    )
+
+  }
+
   return (
     <AppLayout active="Peer Benchmark">
 
@@ -22,7 +105,10 @@ export default function PeerBenchmarkPage() {
           Industry Comparison
         </h2>
 
-        <BenchmarkChart />
+        <BenchmarkChart
+          yourScore={benchmark.your_health_score}
+          industryAverage={benchmark.industry_average}
+        />
 
         {/* AI Insight */}
         <div className="mt-6 bg-green-50 border border-green-200 rounded-xl p-4">
@@ -31,9 +117,12 @@ export default function PeerBenchmarkPage() {
           </p>
 
           <p className="text-gray-700 mt-2">
-            Above the industry average in Cash Flow, Compliance, Repayment
-            and Stability. Digital Adoption remains the primary opportunity
-            for improvement.
+            <strong>{benchmark.business_name}</strong> is{" "}
+            <strong>
+              {benchmark.difference >= 0 ? "above" : "below"}
+            </strong>{" "}
+            the industry average by{" "}
+            <strong>{Math.abs(benchmark.difference)}</strong> points.
           </p>
         </div>
 
@@ -49,12 +138,12 @@ export default function PeerBenchmarkPage() {
             Industry Ranking
           </p>
 
-          <h2 className="text-5xl font-bold text-green-600 mt-3">
-            Top 12%
+          <h2 className="text-4xl font-bold text-green-600 mt-3">
+            {benchmark.ranking}
           </h2>
 
           <p className="text-green-600 mt-3">
-            Better than 88% of similar MSMEs
+            Difference: {benchmark.difference}
           </p>
 
         </div>
@@ -67,11 +156,11 @@ export default function PeerBenchmarkPage() {
 </p>
 
           <h2 className="text-5xl font-bold text-[#003366] mt-3">
-            820
+            {benchmark.industry_average}
           </h2>
 
           <p className="mt-3 text-green-600 font-semibold">
-            ✔ Your Score: 842 (Above Benchmark)
+            ✔ Your Score: {benchmark.your_health_score}
           </p>
 
         </div>
@@ -116,14 +205,28 @@ export default function PeerBenchmarkPage() {
         </h2>
 
         <p className="text-gray-700 leading-8">
-          Based on financial behaviour, compliance history, repayment
-          performance and business growth, this MSME performs significantly
-          better than the industry average. The business ranks within the
-          <span className="font-semibold text-green-600"> Top 12% </span>
-          of comparable MSMEs and exceeds the
-          <span className="font-semibold text-[#003366]"> Top Quartile Benchmark</span>.
-          Continued investment in digital operations and inventory efficiency
-          can further improve the financial health score.
+          <strong>{benchmark.business_name}</strong> belongs to the{" "}
+          <strong>{benchmark.industry}</strong> industry.
+
+          <br /><br />
+
+          Current Health Score:
+          <strong> {benchmark.your_health_score}</strong>
+
+          <br />
+
+          Industry Average:
+          <strong> {benchmark.industry_average}</strong>
+
+          <br />
+
+          Difference:
+          <strong> {benchmark.difference}</strong>
+
+          <br />
+
+          Overall Ranking:
+          <strong> {benchmark.ranking}</strong>
         </p>
 
       </div>
