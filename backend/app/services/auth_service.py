@@ -83,11 +83,28 @@ def login_user(
             "message": "Invalid email or password"
         }
 
+    # # Verify password
+    # if not verify_password(
+    #     password,
+    #     existing_user.password
+    # ):
+    #     return {
+    #         "success": False,
+    #         "message": "Invalid email or password"
+    #     }
+
     # Verify password
-    if not verify_password(
+    print("Entered Password:", password)
+    print("Stored Hash:", existing_user.password)
+
+    result = verify_password(
         password,
         existing_user.password
-    ):
+    )
+
+    print("Password Match:", result)
+
+    if not result:
         return {
             "success": False,
             "message": "Invalid email or password"
