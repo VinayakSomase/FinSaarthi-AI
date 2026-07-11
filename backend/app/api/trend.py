@@ -11,10 +11,17 @@ router = APIRouter(
     tags=["Trend Analysis"]
 )
 
+# @router.get("/")
+# def trend_analysis(
+#     db: Session = Depends(get_db),
+#     current_user: User = Depends(get_current_user)
+# ):
+#     return get_trend(db)
 
-@router.get("/")
+@router.get("/{msme_id}")
 def trend_analysis(
+    msme_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    return get_trend(db)
+    return get_trend(msme_id, db)

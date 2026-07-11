@@ -17,17 +17,31 @@ export default function TrendAnalysisPage() {
 
       try {
 
-        const data = await getTrend()
+        // const data = await getTrend();
 
-        console.log("Trend Data:", data)
+        // console.log("Trend Data:", data)
 
-        setTrendData(data)
+        // setTrendData(data)
+
+        const msmeId = Number(localStorage.getItem("selectedMSME"));
+
+        const data = await getTrend(msmeId);
+
+        console.log("Trend Data:", data);
+
+        setTrendData(data);
 
       } catch (error) {
+          console.error(error);
 
-        console.error(error)
-
-      }
+          setTrendData({
+            latest_health_score: 0,
+            previous_health_score: 0,
+            trend: "No History",
+            difference: 0,
+            history: []
+          });
+        }
 
     }
 
