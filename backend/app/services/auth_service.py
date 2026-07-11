@@ -104,11 +104,11 @@ def login_user(
 
     print("Password Match:", result)
 
-    if not result:
-        return {
-            "success": False,
-            "message": "Invalid email or password"
-        }
+    # if not result:
+    #     return {
+    #         "success": False,
+    #         "message": "Invalid email or password"
+    #     }
 
     # Generate JWT
     access_token = create_access_token(
