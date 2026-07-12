@@ -32,6 +32,7 @@ export default function LoginPage() {
       }
 
       const data = await loginUser(email, password);
+      
       console.log("LOGIN RESPONSE =", data);
       console.log("ACCESS TOKEN =", data.access_token);
 
