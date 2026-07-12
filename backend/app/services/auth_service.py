@@ -72,16 +72,24 @@ def login_user(
     password: str
 ):
 
-    # Find user
+    print("========== LOGIN DEBUG ==========")
+    print("Email received:", repr(email))
+    print("Password received:", repr(password))
+
     existing_user = db.query(User).filter(
         User.email == email
     ).first()
+
+    print("User found:", existing_user is not None)
+
+    if existing_user:
+        print("Database email:", existing_user.email)
 
     if not existing_user:
         return {
             "success": False,
             "message": "Invalid email or password"
-        }
+        }  
 
     # # Verify password
     # if not verify_password(
